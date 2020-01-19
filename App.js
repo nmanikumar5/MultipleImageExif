@@ -23,7 +23,7 @@ export default class App extends Component {
     };
   }
 
-  chooseImage = async () => {
+  chooseImage = () => {
     const options = {
       multiple: true,
       includeExif: true,
@@ -35,26 +35,23 @@ export default class App extends Component {
     ImagePicker.openPicker(options).then(images => {
       const oldImages = cloneDeep(this.state.images);
       let finalImages = oldImages;
-
       images.forEach(async (eachImg, idx) => {
         const gpsData = await Exif.getLatLong(eachImg.path);
         const eachObj = {
+          date: eachImg?.exif['{Exif}'].DateTimeOriginal,
+          model: eachImg?.exif['{TIFF}'].Model,
           path: eachImg.path,
           data: eachImg.data,
-          lat: await gpsData.latitude,
-          long: await gpsData.longitude,
+          lat: gpsData?.latitude,
+          long: gpsData?.longitude,
         };
-        await finalImages.push(eachObj);
+        finalImages.push(eachObj);
+        if (idx === images.length - 1) {
+          this.setState({
+            images: finalImages,
+          });
+        }
       });
-
-      this.setState(
-        {
-          images: finalImages, //.concat(...prevState.images),
-        },
-        () => {
-          // console.log('finaImages: ', this.state.images);
-        },
-      );
     });
   };
 
@@ -87,17 +84,17 @@ export default class App extends Component {
                               }}
                               style={styles.images}
                             />
-                            {/* <Text
+                            <Text
                               key={`dateTime${idx}`}
                               style={styles.imageDataTxt}>
-                              {`Date & Time: ${eachImage?.exif['{Exif}'].DateTimeOriginal}`}
+                              {`Date & Time: ${eachImage?.date}`}
                             </Text>
                             <Text
                               key={`model${idx}`}
                               style={styles.imageDataTxt}
                               s>
-                              {`Model: ${eachImage?.exif['{TIFF}'].Model}`}
-                            </Text> */}
+                              {`Model: ${eachImage?.model}`}
+                            </Text>
                             <Text
                               key={`longitude${idx}`}
                               style={styles.imageDataTxt}>
