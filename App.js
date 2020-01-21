@@ -36,14 +36,17 @@ export default class App extends Component {
       const oldImages = cloneDeep(this.state.images);
       let finalImages = oldImages;
       images.forEach(async (eachImg, idx) => {
+        const latitude = eachImg?.exif['{GPS}']?.Latitude;
+        const longitude = eachImg?.exif['{GPS}']?.Longitude;
         const gpsData = await Exif.getLatLong(eachImg.path);
+
         const eachObj = {
           date: eachImg?.exif['{Exif}'].DateTimeOriginal,
           model: eachImg?.exif['{TIFF}'].Model,
           path: eachImg.path,
           data: eachImg.data,
-          lat: gpsData?.latitude,
-          long: gpsData?.longitude,
+          lat: latitude || gpsData?.latitude,
+          long: longitude || gpsData?.longitude,
         };
         finalImages.push(eachObj);
         if (idx === images.length - 1) {
