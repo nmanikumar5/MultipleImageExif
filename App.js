@@ -1,5 +1,6 @@
 import React, {Fragment, Component} from 'react';
-import {isEmpty, cloneDeep} from 'lodash';
+import {isEmpty, cloneDeep, sortBy, groupBy, keys} from 'lodash';
+import moment from 'moment';
 import {
   SafeAreaView,
   StyleSheet,
@@ -14,12 +15,14 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import ImagePicker from 'react-native-image-crop-picker';
 import Exif from 'react-native-exif';
+import {TabViewPage, TabView} from 'react-native-tab-view';
 
 export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       images: [],
+      currentTab: 0,
     };
   }
 
@@ -40,36 +43,78 @@ export default class App extends Component {
         const longitude = eachImg?.exif['{GPS}']?.Longitude;
         const gpsData = await Exif.getLatLong(eachImg.path);
 
-        const url = `https://tg-services-dev.azurewebsites.net/api/Plans/Location/Suggestions/${latitude ||
-          gpsData?.latitude}/${longitude || gpsData?.longitude}`;
-        fetch(url)
-          .then(res => {
-            console.log('res::: ', res);
-          })
-          .catch(error => {
-            console.log('error::: ', error);
-          });
+        // const url = `https://tg-services-dev.azurewebsites.net/api/Plans/Location/Suggestions/${latitude ||
+        //   gpsData?.latitude}/${longitude || gpsData?.longitude}`;
+        // fetch(url, {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        // })
+        //   .then(res => {
+        //     console.log('res::: ', res);
+        //   })
+        //   .catch(error => {
+        //     console.log('error::: ', error);
+        //   });
 
+        const dateArr = eachImg?.exif['{Exif}'].DateTimeOriginal.split(' ');
+        const dateArr2 = dateArr[0].split(':').join('/');
+        const date = new Date(dateArr2.concat(' ' + dateArr[1]));
         const eachObj = {
-          date: eachImg?.exif['{Exif}'].DateTimeOriginal,
+          date,
           model: eachImg?.exif['{TIFF}'].Model,
           path: eachImg.path,
           data: eachImg.data,
           lat: latitude || gpsData?.latitude,
           long: longitude || gpsData?.longitude,
         };
+
         finalImages.push(eachObj);
         if (idx === images.length - 1) {
+          const imageList = sortBy(finalImages, eachPhoto => {
+            return eachPhoto.date;
+          });
+          const imageList1 = groupBy(imageList, eachPhoto => {
+            return moment(eachPhoto.date, 'MM/DD/YYYY')
+              .startOf('day')
+              .format('MM/DD/YYYY');
+          });
+          // console.log('imageList1::: ', imageList1);
           this.setState({
-            images: finalImages,
+            images: imageList1,
           });
         }
       });
     });
   };
 
+  onChangeTab = index => {
+    console.log('onChangeTab::', index);
+    this.setState({
+      currentTab: index,
+    });
+  };
+
+  _renderPage = props => (
+    <TabViewPage {...props} renderScene={this._renderScene} />
+  );
+
+  _renderScene = ({route}) => {
+    return (
+      <View key={route['key']} style={{flex: 1, backgroundColor: '#ff4081'}}>
+        <Text>{route.key}</Text>
+      </View>
+    );
+  };
+
   render() {
     const {images} = this.state;
+    const imageKeys = keys(images);
+    const dataSource = imageKeys?.map((eachKey, idx) => {
+      return {key: eachKey, title: `Day ${idx + 1}`};
+    });
+    console.log('dateSource:: ', dataSource);
     return (
       <Fragment>
         <StatusBar barStyle="dark-content" />
@@ -83,7 +128,7 @@ export default class App extends Component {
                   <Text style={styles.btnText}>Choose File</Text>
                 </TouchableOpacity>
                 <ScrollView horizontal={true}>
-                  <View style={styles.ImageSections}>
+                  {/* <View style={styles.ImageSections}>
                     {!isEmpty(images) &&
                       images.map((eachImage, idx) => {
                         return (
@@ -121,8 +166,15 @@ export default class App extends Component {
                           </View>
                         );
                       })}
-                  </View>
+                  </View> */}
                 </ScrollView>
+
+                <TabView
+                  navigationState={{index: 0, dataSource}}
+                  renderScene={this._renderPage}
+                  onIndexChange={this.onChangeTab}
+                  initialLayout={{width: Dimensions.get('window').width}}
+                />
               </View>
             </View>
           </ScrollView>
@@ -182,5 +234,8 @@ const styles = StyleSheet.create({
     color: 'gray',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  container: {
+    backgroundColor: 'orange',
   },
 });

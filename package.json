@@ -11,10 +11,15 @@
   },
   "dependencies": {
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "react": "16.9.0",
+    "react-moment": "^0.9.7",
     "react-native": "0.61.5",
     "react-native-exif": "^0.4.0",
-    "react-native-image-crop-picker": "^0.26.2"
+    "react-native-gesture-handler": "^1.5.3",
+    "react-native-image-crop-picker": "^0.26.2",
+    "react-native-reanimated": "^1.7.0",
+    "react-native-tab-view": "^2.12.0"
   },
   "devDependencies": {
     "@babel/core": "7.8.3",
