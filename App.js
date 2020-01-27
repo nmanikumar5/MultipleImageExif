@@ -40,6 +40,16 @@ export default class App extends Component {
         const longitude = eachImg?.exif['{GPS}']?.Longitude;
         const gpsData = await Exif.getLatLong(eachImg.path);
 
+        const url = `https://tg-services-dev.azurewebsites.net/api/Plans/Location/Suggestions/${latitude ||
+          gpsData?.latitude}/${longitude || gpsData?.longitude}`;
+        fetch(url)
+          .then(res => {
+            console.log('res::: ', res);
+          })
+          .catch(error => {
+            console.log('error::: ', error);
+          });
+
         const eachObj = {
           date: eachImg?.exif['{Exif}'].DateTimeOriginal,
           model: eachImg?.exif['{TIFF}'].Model,
