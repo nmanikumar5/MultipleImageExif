@@ -14,7 +14,7 @@
     "moment": "^2.24.0",
     "react": "16.9.0",
     "react-moment": "^0.9.7",
-    "react-native": "0.61.5",
+    "react-native": "0.62.3",
     "react-native-exif": "^0.4.0",
     "react-native-gesture-handler": "^1.5.3",
     "react-native-image-crop-picker": "^0.26.2",
